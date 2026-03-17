@@ -337,24 +337,3 @@ year_stack <- terra::rast(year_files)
 ```
 
 No resampling, no mosaicking — they already snap. This stack becomes the feature set for our random forest models linking lidar structure metrics to field-measured forest attributes across the Ichauway landscape.
-
----
-
-## 📦 Repository Structure
-
-```
-codeblitz4/
-├── README.md
-├── Master_metrics_function.R    # shared function — do not modify
-├── NEON_lidar_tile.laz          # practice tile for Exercise 1
-├── NEON_lidar_tile.lax
-└── output/                      # your output rasters go here
-```
-
----
-
-## 👥 Contributors
-
-Add your name here in your pull request!
-
-Jeffery Cannon
