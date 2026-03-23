@@ -44,6 +44,7 @@ Load required packages:
 library(lidR)
 library(terra)
 library(lidRmetrics)
+library(Lmoments)
 
 source("Master_metrics_function.R")
 ```
@@ -119,12 +120,12 @@ Each team will work with a different acquisition year during this exercise. Use 
 
 | Team | Year | Path |
 |------|------|------|
-| Team 1 | 2014 | `I:/neon/2014/lidar/ClassifiedPointCloud/` |
+| Team 1 | 2014 | `I:/neon/2014/lidar/Classified_point_cloud/` |
 | Team 2 | 2017 | `I:/neon/2017/lidar/ClassifiedPointCloud/` |
 | Team 3 | 2019 | `I:/neon/2019/lidar/ClassifiedPointCloud/` |
 
 ```r
-# Replace the path with your team's assigned year
+# Replace the path with your team's assigned year (check 2014 folder name if you're Team 1)
 ctg <- readLAScatalog("I:/neon/2014/lidar/ClassifiedPointCloud/")
 
 # Inspect the catalog — note it never loads the points
