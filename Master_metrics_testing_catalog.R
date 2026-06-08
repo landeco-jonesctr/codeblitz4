@@ -37,7 +37,7 @@ myfun <- function(las, res) {
 # HOW TO TROUBLESHOOT AND RUN A SIGNLE CHUNK.
 # chunks = engine_chunks(ctg)
 # chunks[1]
-# chunk = chunks[[1]]
+# chunk = chunks[[4]]
 # las = readLAS(chunk)
 # output = myfun(las, res=20)
 # plot(output)
@@ -69,3 +69,36 @@ tile_files  <- list.files('output/2019', pattern = '\\.tif$', full.names = TRUE)
 tile_rasts  <- lapply(tile_files, rast)
 mosaic_full <- do.call(mosaic, c(tile_rasts, list(fun = 'mean')))
 writeRaster(mosaic_full, 'output/2019_metrics.tif')
+
+# =============================================================================
+# RE-RUN RESUME/SKIP  only process tiles that don't have a tif yet.
+# Use this if the run was interrupted and you want to pick up where you left off.
+# NOTE: {ID} in opt_output_files is a 1-based counter matching catalog row order,
+#       so tile 1 → output/2019/1.tif, tile 2 → output/2019/2.tif, etc.
+# =============================================================================
+
+ctg_full <- readLAScatalog('I:/neon/2019/lidar/ClassifiedPointCloud/')
+
+# find which tile IDs already finished
+done_ids  <- as.integer(gsub('\\.tif$', '', basename(
+  list.files('output/2019', pattern = '\\.tif$'))))
+total_ids <- seq_len(nrow(ctg_full@data))
+todo_ids  <- setdiff(total_ids, done_ids)
+cat('Tiles remaining:', length(todo_ids), 'of', length(total_ids), '\n')
+
+# subset catalog to only unfinished tiles
+ctg_resume <- ctg_full[todo_ids, ]
+opt_chunk_alignment(ctg_resume) <- c(0, 0)
+opt_filter(ctg_resume)          <- '-thin_with_voxel 0.5'
+opt_chunk_buffer(ctg_resume)    <- 80
+opt_output_files(ctg_resume)    <- 'output/2019/{ID}'
+
+plan(multisession, workers = 3)
+catalog_map(ctg_resume, myfun, res = 20)
+
+
+# mosaic ALL tiles (done + newly finished)
+tile_files  <- list.files('output/2019', pattern = '\\.tif$', full.names = TRUE)
+tile_rasts  <- lapply(tile_files, rast)
+mosaic_full <- do.call(mosaic, c(tile_rasts, list(fun = 'mean')))
+writeRaster(mosaic_full, 'output/2019_metrics.tif', overwrite = TRUE)
