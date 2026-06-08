@@ -57,7 +57,7 @@ plan(sequential)
 ctg_full <- readLAScatalog('I:/neon/2019/lidar/ClassifiedPointCloud/')
 opt_chunk_alignment(ctg_full) <- c(0, 0)
 opt_filter(ctg_full)          <- '-thin_with_voxel 0.5'
-opt_chunk_buffer(ctg_full)    <- 20
+opt_chunk_buffer(ctg_full)    <- 80
 opt_output_files(ctg_full)    <- 'output/2019/{ID}'
 
 plan(multisession, workers = 3)

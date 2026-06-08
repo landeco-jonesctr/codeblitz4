@@ -120,10 +120,10 @@ master_metrics <- function(x, y, z, i, ReturnNumber, NumberOfReturns,
   
   m_HOME   <- lidRmetrics::metrics_HOME(z = z, i = i, zmin = zmin)
   
-  texture_na <- list(glcm_contrast = NA, glcm_dissimilarity = NA,
-                      glcm_homogeneity = NA, glcm_ASM = NA,
-                      glcm_entropy = NA, glcm_mean = NA,
-                      glcm_variance = NA, glcm_correlation = NA)
+  texture_na <- list(glcm_contrast = NA_real_, glcm_dissimilarity = NA_real_,
+                      glcm_homogeneity = NA_real_, glcm_ASM = NA_real_,
+                      glcm_entropy = NA_real_, glcm_mean = NA_real_,
+                      glcm_variance = NA_real_, glcm_correlation = NA_real_)
 
   n_cells <- nrow(unique(data.frame(floor(x / pixel_size), floor(y / pixel_size))))
 
