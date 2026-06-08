@@ -19,7 +19,7 @@ plot(ctg)
 
 opt_chunk_alignment(ctg) <- c(0, 0)
 opt_filter(ctg)          <- '-thin_with_voxel 0.5'
-opt_chunk_buffer(ctg)    <- 20
+opt_chunk_buffer(ctg)    <- 80 ####### CHANGED BC OF EDGE EFFECTS
 
 plot(ctg, chunk_pattern = TRUE)
 
@@ -35,12 +35,12 @@ myfun <- function(las, res) {
 }
 
 # HOW TO TROUBLESHOOT AND RUN A SIGNLE CHUNK.
-chunks = engine_chunks(ctg)
-chunks[1]
-chunk = chunks[[1]]
-las = readLAS(chunk)
-output = myfun(las, res=20)
-plot(output)
+# chunks = engine_chunks(ctg)
+# chunks[1]
+# chunk = chunks[[1]]
+# las = readLAS(chunk)
+# output = myfun(las, res=20)
+# plot(output)
 
 ## RUN FOR ENTIRE MAP (subset test)
 output <- lidR::catalog_map(ctg, myfun, res = 20)
