@@ -120,11 +120,23 @@ master_metrics <- function(x, y, z, i, ReturnNumber, NumberOfReturns,
   
   m_HOME   <- lidRmetrics::metrics_HOME(z = z, i = i, zmin = zmin)
   
-  mt       <- lidRmetrics::metrics_texture(x = x, y = y, z = z,
-                                           pixel_size = pixel_size,
-                                           zmin = zmin,
-                                           chm_algorithm = chm_algorithm)
-  
+  texture_na <- list(glcm_contrast = NA, glcm_dissimilarity = NA,
+                      glcm_homogeneity = NA, glcm_ASM = NA,
+                      glcm_entropy = NA, glcm_mean = NA,
+                      glcm_variance = NA, glcm_correlation = NA)
+
+  n_cells <- nrow(unique(data.frame(floor(x / pixel_size), floor(y / pixel_size))))
+
+  mt <- if (n_cells >= 3) {
+    tryCatch(
+      lidRmetrics::metrics_texture(x = x, y = y, z = z, pixel_size = pixel_size,
+                                   zmin = zmin, chm_algorithm = chm_algorithm),
+      error = function(e) texture_na
+    )
+  } else {
+    texture_na
+  }
+
   m <- c(m_set1, m_echo, m_echo2, m_rumple, m_vox, m_kde, m_HOME, mt)
   return(m)
 }
