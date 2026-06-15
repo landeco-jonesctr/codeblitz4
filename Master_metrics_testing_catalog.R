@@ -58,7 +58,8 @@ ctg_full <- readLAScatalog('I:/neon/2019/lidar/ClassifiedPointCloud/')
 opt_chunk_alignment(ctg_full) <- c(0, 0)
 opt_filter(ctg_full)          <- '-thin_with_voxel 0.5'
 opt_chunk_buffer(ctg_full)    <- 80
-opt_output_files(ctg_full)    <- 'output/2019/{ID}'
+opt_output_files(ctg_full)    <- 'output/2019/{XLEFT}_{YBOTTOM}'
+opt_stop_early(ctg_full)    <- FALSE
 
 plan(multisession, workers = 3)
 catalog_map(ctg_full, myfun, res = 20)
@@ -68,34 +69,38 @@ catalog_map(ctg_full, myfun, res = 20)
 tile_files  <- list.files('output/2019', pattern = '\\.tif$', full.names = TRUE)
 tile_rasts  <- lapply(tile_files, rast)
 mosaic_full <- do.call(mosaic, c(tile_rasts, list(fun = 'mean')))
-writeRaster(mosaic_full, 'output/2019_metrics.tif')
+writeRaster(mosaic_full, 'output/2019_metrics.tif', overwrite = TRUE)
 
 # =============================================================================
-# RE-RUN RESUME/SKIP  only process tiles that don't have a tif yet.
+# RE-RUN RESUME/SKIP — only process tiles that don't have a tif yet.
 # Use this if the run was interrupted and you want to pick up where you left off.
-# NOTE: {ID} in opt_output_files is a 1-based counter matching catalog row order,
-#       so tile 1 → output/2019/1.tif, tile 2 → output/2019/2.tif, etc.
+# {XLEFT}_{YBOTTOM} gives each chunk a stable name from its lower-left corner,
+# which is consistent no matter how the catalog is subsetted.
 # =============================================================================
 
 ctg_full <- readLAScatalog('I:/neon/2019/lidar/ClassifiedPointCloud/')
 
-# find which tile IDs already finished
-done_ids  <- as.integer(gsub('\\.tif$', '', basename(
-  list.files('output/2019', pattern = '\\.tif$'))))
-total_ids <- seq_len(nrow(ctg_full@data))
-todo_ids  <- setdiff(total_ids, done_ids)
-cat('Tiles remaining:', length(todo_ids), 'of', length(total_ids), '\n')
+
+# build the expected output filename for every chunk (same formula as above)
+chunks   <- engine_chunks(ctg_full)
+
+expected <- sapply(chunks, function(c)
+  paste0('output/2019/', c@bbox[1,1], '_', c@bbox[2,1], '.tif'))
+
+# find which chunks still need to run
+todo_rows <- which(!file.exists(expected))
+cat('Tiles remaining:', length(todo_rows), 'of', length(chunks), '\n')
 
 # subset catalog to only unfinished tiles
-ctg_resume <- ctg_full[todo_ids, ]
-opt_chunk_alignment(ctg_resume) <- c(0, 0)
-opt_filter(ctg_resume)          <- '-thin_with_voxel 0.5'
-opt_chunk_buffer(ctg_resume)    <- 80
-opt_output_files(ctg_resume)    <- 'output/2019/{ID}'
+ctg_resume <- ctg_full[todo_rows, ]
+opt_filter(ctg_resume)       <- '-thin_with_voxel 0.5'
+opt_chunk_buffer(ctg_resume) <- 80
+opt_output_files(ctg_resume) <- 'output/2019/{XLEFT}_{YBOTTOM}'
+opt_stop_early(ctg_full)    <- FALSE
 
-plan(multisession, workers = 3)
+plan(multisession, workers = 2)
 catalog_map(ctg_resume, myfun, res = 20)
-
+plan(sequential)
 
 # mosaic ALL tiles (done + newly finished)
 tile_files  <- list.files('output/2019', pattern = '\\.tif$', full.names = TRUE)
